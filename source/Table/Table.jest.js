@@ -965,13 +965,12 @@ describe('Table', () => {
           scrollTop: 80,
         }),
       );
-      expect(startIndex).toEqual(6);
+      expect(startIndex).toEqual(8);
       expect(stopIndex).toEqual(15);
     });
 
     it('should render correctly when :scrollTop property is updated', () => {
       let startIndex, stopIndex;
-
       render(
         getMarkup({
           onRowsRendered: params => ({startIndex, stopIndex} = params),
@@ -982,6 +981,42 @@ describe('Table', () => {
 
       render(
         getMarkup({
+          onRowsRendered: params => ({startIndex, stopIndex} = params),
+          scrollTop: 80,
+        }),
+      );
+      expect(startIndex).toEqual(8);
+      expect(stopIndex).toEqual(15);
+    });
+
+    it('should render correctly when an initial :scrollTop property is specified with autoHeight=true', () => {
+      let startIndex, stopIndex;
+      render(
+        getMarkup({
+          autoHeight: true,
+          onRowsRendered: params => ({startIndex, stopIndex} = params),
+          scrollTop: 80,
+        }),
+      );
+      expect(startIndex).toEqual(6);
+      expect(stopIndex).toEqual(15);
+    });
+
+    it('should render correctly when :scrollTop property is updated with autoHeight=true', () => {
+      let startIndex, stopIndex;
+
+      render(
+        getMarkup({
+          autoHeight: true,
+          onRowsRendered: params => ({startIndex, stopIndex} = params),
+        }),
+      );
+      expect(startIndex).toEqual(0);
+      expect(stopIndex).toEqual(7);
+
+      render(
+        getMarkup({
+          autoHeight: true,
           onRowsRendered: params => ({startIndex, stopIndex} = params),
           scrollTop: 80,
         }),
@@ -1167,6 +1202,7 @@ describe('Table', () => {
 
     it('should trigger callback when component scrolls', () => {
       const onScrollCalls = [];
+      render.unmount();
       const rendered = render(
         getMarkup({
           onScroll: params => onScrollCalls.push(params),
@@ -1174,7 +1210,7 @@ describe('Table', () => {
       );
       const target = {
         scrollLeft: 0,
-        scrollTop: 80,
+        scrollTop: 100,
       };
       rendered.Grid._scrollingContainer = target; // HACK to work around _onScroll target check
       Simulate.scroll(findDOMNode(rendered.Grid), {target});
