@@ -965,7 +965,7 @@ describe('Table', () => {
           scrollTop: 80,
         }),
       );
-      expect(startIndex).toEqual(8);
+      expect(startIndex).toEqual(6);
       expect(stopIndex).toEqual(15);
     });
 
@@ -986,7 +986,7 @@ describe('Table', () => {
           scrollTop: 80,
         }),
       );
-      expect(startIndex).toEqual(8);
+      expect(startIndex).toEqual(6);
       expect(stopIndex).toEqual(15);
     });
   });
@@ -1174,7 +1174,7 @@ describe('Table', () => {
       );
       const target = {
         scrollLeft: 0,
-        scrollTop: 100,
+        scrollTop: 80,
       };
       rendered.Grid._scrollingContainer = target; // HACK to work around _onScroll target check
       Simulate.scroll(findDOMNode(rendered.Grid), {target});

@@ -242,9 +242,12 @@ export default class Table extends PureComponent {
       scrollbarWidth: 0,
     };
 
+    this._initialOnScrollCalled = false;
+
     this._createColumn = this._createColumn.bind(this);
     this._createRow = this._createRow.bind(this);
     this._onScroll = this._onScroll.bind(this);
+    this._onGridScroll = this._onGridScroll.bind(this);
     this._onSectionRendered = this._onSectionRendered.bind(this);
     this._setRef = this._setRef.bind(this);
   }
@@ -343,13 +346,12 @@ export default class Table extends PureComponent {
       noRowsRenderer,
       rowClassName,
       rowStyle,
+      scrollTop,
       scrollToIndex,
       style,
       width,
     } = this.props;
     const {scrollbarWidth} = this.state;
-
-    const availableRowsHeight = disableHeader ? height : height - headerHeight;
 
     const rowClass =
       typeof rowClassName === 'function'
@@ -401,14 +403,15 @@ export default class Table extends PureComponent {
           cellRenderer={this._createRow}
           columnWidth={width}
           columnCount={1}
-          height={availableRowsHeight}
+          height={this._getAvailableRowsHeight()}
           id={undefined}
           noContentRenderer={noRowsRenderer}
-          onScroll={this._onScroll}
+          onScroll={this._onGridScroll}
           onSectionRendered={this._onSectionRendered}
           ref={this._setRef}
           role="rowgroup"
           scrollbarWidth={scrollbarWidth}
+          scrollTop={this._getGridScrollTop()}
           scrollToRow={scrollToIndex}
           style={{
             ...gridStyle,
@@ -665,9 +668,47 @@ export default class Table extends PureComponent {
       : rowHeight;
   }
 
+  _getAvailableRowsHeight() {
+    const {autoHeight, disableHeader, height, headerHeight, scrollTop} = this.props;
+    if (disableHeader) {
+      return height;
+    }
+    if (!autoHeight) {
+      return height - headerHeight;
+    }
+    const headerVisibleHeight = Math.max(headerHeight - (scrollTop||0), 0);
+    return Math.max(0, height - headerVisibleHeight);
+  }
+
+  _onGridScroll({clientHeight, scrollHeight, scrollTop: gridScrollTop}) {
+    const {onScroll} = this.props;
+    if (!this._initialOnScrollCalled) {
+      this._initialOnScrollCalled = true;
+      this._onScroll({clientHeight, scrollHeight, scrollTop: 0});
+      return;
+    }
+    const scrollTop = this._getScrollTopFromGrid(gridScrollTop);
+    this._onScroll({clientHeight, scrollHeight, scrollTop});
+  }
+
+  _getScrollTopFromGrid(gridScrollTop) {
+    const {autoHeight, disableHeader, headerHeight} = this.props;
+    if (!autoHeight) {
+      return gridScrollTop;
+    }
+    return disableHeader ? gridScrollTop : gridScrollTop + headerHeight;
+  }
+
+  _getGridScrollTop() {
+    const {autoHeight, disableHeader, scrollTop, headerHeight} = this.props;
+    if (!autoHeight) {
+      return scrollTop||0;
+    }
+    return disableHeader ? scrollTop : Math.max(0, scrollTop - headerHeight);
+  }
+
   _onScroll({clientHeight, scrollHeight, scrollTop}) {
     const {onScroll} = this.props;
-
     onScroll({clientHeight, scrollHeight, scrollTop});
   }
 
